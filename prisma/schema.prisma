@@ -1,0 +1,141 @@
+// Wedding & Event Vendor Marketplace schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vendor {
+  id              String   @id @default(cuid())
+  businessName    String
+  slug            String   @unique
+  category        String
+  city            String
+  area            String?
+  description     String
+  shortDescription String
+  coverImage      String
+  logoImage       String?
+  gallery         String   // JSON array of image URLs
+  startingPrice   Int      // in PKR
+  priceMax        Int?
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  bookingCount    Int      @default(0)
+  responseTime    String?  // e.g. "2 hours"
+  yearsActive     Int      @default(1)
+  verified        Boolean  @default(false)
+  featured        Boolean  @default(false)
+  premium         Boolean  @default(false)
+  tags            String?  // JSON array
+  services        String?  // JSON array
+  teamSize        String?
+  phone           String?
+  whatsapp        String?
+  email           String?
+  instagram       String?
+  tiktok          String?
+  address         String?
+  availability    String?  // JSON array of busy dates
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  packages        Package[]
+  reviews         Review[]
+  inquiries       Inquiry[]
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  vendorId    String
+  name        String
+  description String
+  price       Int
+  duration    String?  // e.g. "Full day", "8 hours"
+  features    String   // JSON array
+  popular     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  vendorId  String
+  customerName String
+  rating    Float
+  title     String?
+  comment   String
+  eventDate String?
+  eventType String?
+  createdAt DateTime @default(now())
+
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+model Inquiry {
+  id         String   @id @default(cuid())
+  vendorId   String
+  customerName String
+  customerPhone String
+  customerEmail String?
+  eventDate  String
+  eventType  String
+  city       String
+  guestCount Int?
+  budget     Int?
+  message    String
+  status     String   @default("pending") // pending, contacted, quoted, booked, rejected
+  createdAt  DateTime @default(now())
+
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  icon        String?
+  description String?
+  imageUrl    String?
+  vendorCount Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model City {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  vendorCount Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  category    String
+  author      String
+  imageUrl    String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  role      String   @default("customer") // customer | vendor | admin
+  phone     String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
