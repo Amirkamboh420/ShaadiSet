@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Menu,
   Heart,
@@ -14,9 +16,6 @@ import {
   User as UserIcon,
   LogOut,
   ChevronDown,
-  Lock,
-  ShieldCheck,
-  CheckCircle2,
   Phone,
   Crown,
 } from 'lucide-react'
@@ -46,23 +45,25 @@ const NAV_ITEMS = [
 ]
 
 export function Header() {
-  const { setView, view, compareList, favorites } = useMarketplace()
+  const { setView, view, compareList, favorites, isAuthenticated } = useMarketplace()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+  const visibleNavItems = NAV_ITEMS.filter((item) => item.view !== 'dashboard' || isAuthenticated)
 
   const isActive = (v: string) => view === v
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-      <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
+      <div className="header-shell mx-auto flex h-16 w-full max-w-[1920px] items-center justify-between gap-2 px-3 sm:gap-4 sm:px-5 xl:px-8">
         {/* Logo */}
         <button
           onClick={() => setView('home')}
-          className="flex items-center gap-2 transition active:scale-95"
+          className="flex shrink-0 items-center gap-2 transition active:scale-95"
         >
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Sparkles className="h-5 w-5" />
           </div>
-          <div className="text-left leading-none">
+          <div className="header-brand-copy text-left leading-none">
             <div className="font-serif text-lg font-bold tracking-tight text-foreground">
               ShaadiSet
             </div>
@@ -73,19 +74,19 @@ export function Header() {
         </button>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-0.5 lg:flex">
-          {NAV_ITEMS.map((item) => (
+        <nav className="header-desktop-nav min-w-0 flex-1 items-center justify-center gap-0 whitespace-nowrap">
+          {visibleNavItems.map((item) => (
             <button
               key={item.view}
               onClick={() => setView(item.view)}
               className={cn(
-                'relative flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition',
+                'relative flex shrink-0 items-center gap-1 rounded-md px-2 py-2 text-[13px] font-medium transition',
                 isActive(item.view)
                   ? 'bg-primary/10 text-primary'
                   : 'text-foreground/70 hover:bg-accent hover:text-foreground'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="header-nav-icon h-4 w-4" />
               <span>{item.label}</span>
               {item.view === 'compare' && compareList.length > 0 && (
                 <Badge className="ml-0.5 h-4 min-w-4 px-1 text-[9px] bg-primary text-primary-foreground">
@@ -103,11 +104,11 @@ export function Header() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5">
+        <div className="header-actions flex shrink-0 items-center gap-0.5 sm:gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="hidden sm:inline-flex"
+            className="header-search-action hidden sm:inline-flex"
             onClick={() => setView('browse')}
             aria-label="Search vendors"
           >
@@ -116,9 +117,9 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative hidden sm:inline-flex"
-            onClick={() => setView('dashboard')}
-            aria-label="Favorites"
+            className="header-favorites-action relative hidden sm:inline-flex"
+            onClick={() => isAuthenticated ? setView('dashboard') : router.push('/login')}
+            aria-label={isAuthenticated ? 'Favorites and dashboard' : 'Login to view favorites'}
           >
             <Heart className="h-4 w-4" />
             {favorites.length > 0 && (
@@ -130,7 +131,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative hidden sm:inline-flex"
+            className="relative hidden sm:inline-flex header-compare-action"
             onClick={() => setView('compare')}
             aria-label="Compare list"
           >
@@ -150,7 +151,7 @@ export function Header() {
 
           <Button
             size="sm"
-            className="hidden lg:inline-flex"
+            className="header-business-action"
             onClick={() => setView('vendor-signup')}
           >
             <Store className="mr-1.5 h-4 w-4" />
@@ -160,7 +161,7 @@ export function Header() {
           {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon" className="header-mobile-menu" aria-label="Open navigation menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -185,7 +186,7 @@ export function Header() {
                 >
                   Home
                 </button>
-                {NAV_ITEMS.map((item) => (
+                {visibleNavItems.map((item) => (
                   <button
                     key={item.view}
                     onClick={() => {
@@ -218,20 +219,22 @@ export function Header() {
                 >
                   <Search className="h-4 w-4" /> Search
                 </button>
-                <button
-                  onClick={() => {
-                    setView('dashboard')
-                    setOpen(false)
-                  }}
-                  className="flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                >
-                  <LayoutDashboard className="h-4 w-4" /> Dashboard
-                  {favorites.length > 0 && (
-                    <Badge className="ml-auto h-5 min-w-5 px-1 text-[10px] bg-primary text-primary-foreground">
-                      {favorites.length}
-                    </Badge>
-                  )}
-                </button>
+                {isAuthenticated && (
+                  <button
+                    onClick={() => {
+                      setView('dashboard')
+                      setOpen(false)
+                    }}
+                    className="flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    {favorites.length > 0 && (
+                      <Badge className="ml-auto h-5 min-w-5 px-1 text-[10px] bg-primary text-primary-foreground">
+                        {favorites.length}
+                      </Badge>
+                    )}
+                  </button>
+                )}
                 <Button
                   className="mt-2"
                   onClick={() => {
@@ -253,40 +256,22 @@ export function Header() {
 
 function UserMenu() {
   const { user, isAuthenticated, logoutUser, setView } = useMarketplace()
-  const [authSheetOpen, setAuthSheetOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Not logged in — use a Sheet for auth (already imported, no extra bundle weight)
+  // Not logged in â€” use a Sheet for auth (already imported, no extra bundle weight)
   if (!isAuthenticated || !user) {
     return (
-      <>
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:inline-flex"
-          onClick={() => setAuthSheetOpen(true)}
-        >
-          <UserIcon className="mr-1.5 h-4 w-4" />
-          Login
+      <div className="flex items-center gap-1.5">
+        <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+          <Link href="/login"><UserIcon className="mr-1.5 h-4 w-4" />Login</Link>
         </Button>
-        <Button
-          size="sm"
-          className="hidden sm:inline-flex"
-          onClick={() => setAuthSheetOpen(true)}
-        >
-          Sign Up
+        <Button asChild size="sm" className="header-signup-button hidden sm:inline-flex">
+          <Link href="/register">Sign up</Link>
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="sm:hidden"
-          onClick={() => setAuthSheetOpen(true)}
-          aria-label="Login"
-        >
-          <UserIcon className="h-4 w-4" />
+        <Button asChild variant="ghost" size="icon" className="sm:hidden">
+          <Link href="/login" aria-label="Login"><UserIcon className="h-4 w-4" /></Link>
         </Button>
-        <SimpleAuthSheet open={authSheetOpen} onOpenChange={setAuthSheetOpen} />
-      </>
+      </div>
     )
   }
 
@@ -326,172 +311,5 @@ function UserMenu() {
         </>
       )}
     </div>
-  )
-}
-
-// Simple auth sheet using existing components (Button, Input, Sheet — no extra imports)
-function SimpleAuthSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { loginUser } = useMarketplace()
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email.trim() || !password.trim()) return
-    setLoading(true)
-    try {
-      if (mode === 'signup') {
-        const res = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, phone }),
-        })
-        const data = await res.json()
-        if (!data.success) { setLoading(false); return }
-      }
-      const loginRes = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      const loginData = await loginRes.json()
-      if (loginData.success) {
-        loginUser(loginData.user)
-        onOpenChange(false)
-        setName(''); setEmail(''); setPassword(''); setPhone('')
-      }
-    } catch {
-      // silent
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const inputClass = 'mt-1.5 flex h-11 w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-2 text-sm text-[#222B45] placeholder:text-[#9CA3AF] transition focus:border-[#C61162] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C61162]/10'
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto p-0">
-        {/* Header with gradient */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#C61162] to-[#9A0E4C] p-6 text-white">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-[#EAA552]/20 blur-xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-white/15 backdrop-blur">
-                <Heart className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h2 className="font-serif text-xl font-bold">
-                  {mode === 'login' ? 'Welcome Back!' : 'Join ShaadiSet'}
-                </h2>
-                <p className="text-xs text-white/80">
-                  {mode === 'login' ? 'Login to track inquiries, chats & favorites' : 'Apna account banayein — free hai'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab switcher */}
-        <div className="px-6 pt-5">
-          <div className="flex gap-1 rounded-xl bg-[#FAE6EF] p-1">
-            <button
-              onClick={() => setMode('login')}
-              className={cn(
-                'flex-1 rounded-lg py-2.5 text-sm font-medium transition',
-                mode === 'login' ? 'bg-white text-[#C61162] shadow-sm' : 'text-[#8F9BB3]'
-              )}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setMode('signup')}
-              className={cn(
-                'flex-1 rounded-lg py-2.5 text-sm font-medium transition',
-                mode === 'signup' ? 'bg-white text-[#C61162] shadow-sm' : 'text-[#8F9BB3]'
-              )}
-            >
-              Sign Up
-            </button>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {mode === 'signup' && (
-            <div>
-              <label className="text-xs font-semibold text-[#222B45]">Full Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ahmed Khan" className={inputClass} />
-            </div>
-          )}
-          <div>
-            <label className="text-xs font-semibold text-[#222B45]">Email Address</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputClass} required />
-          </div>
-          {mode === 'signup' && (
-            <div>
-              <label className="text-xs font-semibold text-[#222B45]">Phone / WhatsApp</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+92 300 1234567" className={inputClass} />
-            </div>
-          )}
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#222B45]">Password</label>
-              {mode === 'signup' && <span className="text-[10px] text-[#8F9BB3]">min 6 chars</span>}
-            </div>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} required minLength={mode === 'signup' ? 6 : undefined} />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#C61162] to-[#9A0E4C] text-sm font-semibold text-white shadow-lg shadow-[#C61162]/25 transition hover:from-[#9A0E4C] hover:to-[#C61162] hover:shadow-[#C61162]/35 disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Please wait...
-              </>
-            ) : mode === 'login' ? (
-              <>
-                <Lock className="h-4 w-4" /> Login
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" /> Create Account
-              </>
-            )}
-          </button>
-
-          {/* Divider */}
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#E5E7EB]" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-[10px] uppercase tracking-wider text-[#8F9BB3]">or</span>
-            </div>
-          </div>
-
-          {/* Demo credentials */}
-          <div className="rounded-xl border border-[#FAE6EF] bg-[#FAE6EF]/30 p-3 text-center">
-            <p className="text-xs text-[#8F9BB3]">Demo login:</p>
-            <p className="mt-1 text-xs font-medium text-[#222B45]">demo@shaadiset.pk / demo123</p>
-          </div>
-
-          {/* Trust indicators */}
-          <div className="flex items-center justify-center gap-4 pt-2 text-[10px] text-[#8F9BB3]">
-            <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-[#075E54]" /> Secure</span>
-            <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[#075E54]" /> Free</span>
-            <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-[#C61162]" /> Trusted</span>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
   )
 }

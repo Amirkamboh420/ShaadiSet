@@ -481,3 +481,109 @@
     transparent 100%
   );
 }
+
+/* Header navigation switches to a full row once there is room for it. */
+.header-desktop-nav {
+  display: none;
+}
+
+.header-mobile-menu {
+  display: inline-flex;
+}
+
+.header-business-action {
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .header-desktop-nav {
+    display: flex !important;
+  }
+
+  .header-search-action,
+  .header-compare-action {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .header-mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1700px) {
+  .header-business-action {
+    display: inline-flex !important;
+  }
+}
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .header-shell {
+    height: 4rem !important;
+    flex-wrap: nowrap;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .header-desktop-nav {
+    display: flex !important;
+    order: 0;
+    flex: 1 1 auto;
+    width: auto;
+    column-gap: 0.5rem !important;
+    padding-top: 0;
+  }
+
+  .header-actions {
+    order: 0;
+  }
+
+  .header-search-action,
+  .header-compare-action {
+    display: none !important;
+  }
+
+  .header-desktop-nav button {
+    gap: 0.25rem;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    font-size: 12px !important;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199.98px) {
+  .header-desktop-nav {
+    display: none !important;
+  }
+  .header-brand-copy,
+  .header-nav-icon,
+  .header-search-action,
+  .header-compare-action,
+  .header-favorites-action,
+  .header-signup-button {
+    display: none !important;
+  }
+
+  .header-desktop-nav button {
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 899.98px) {
+  .header-desktop-nav {
+    display: none !important;
+  }
+
+  .header-mobile-menu {
+    display: inline-flex !important;
+  }
+
+  .header-search-action,
+  .header-compare-action,
+  .header-favorites-action,
+  .header-signup-button {
+    display: none !important;
+  }
+}

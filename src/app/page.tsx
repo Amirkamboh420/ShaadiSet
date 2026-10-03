@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { Header } from '@/components/marketplace/header'
 import { Footer } from '@/components/marketplace/footer'
 import { HomeView } from '@/components/marketplace/views/home-view'
@@ -31,7 +32,15 @@ function ViewLoader() {
 }
 
 export default function Home() {
-  const { view } = useMarketplace()
+  const { view, isAuthenticated, setView } = useMarketplace()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (view === 'dashboard' && !isAuthenticated) {
+      setView('home')
+      router.push('/login')
+    }
+  }, [view, isAuthenticated, router, setView])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -43,11 +52,11 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
-        {view === 'home' && <HomeView />}
+        {(view === 'home' || (view === 'dashboard' && !isAuthenticated)) && <HomeView />}
         {view === 'browse' && <BrowseView />}
         {view === 'vendor' && <VendorProfileView />}
         {view === 'compare' && <CompareView />}
-        {view === 'dashboard' && <DashboardView />}
+        {view === 'dashboard' && isAuthenticated && <DashboardView />}
         {view === 'vendor-signup' && <VendorSignupView />}
         {view === 'plan' && <PlanView />}
         {view === 'recommend' && <RecommendView />}
