@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import {
   Search,
   SlidersHorizontal,
@@ -12,6 +12,7 @@ import {
   Tag,
   Loader2,
   PackageSearch,
+  ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -64,12 +65,66 @@ const RATING_OPTIONS = [
   { value: '5', label: '5.0', stars: 5 },
 ]
 
+const VENDORS_PER_PAGE = 9
+
 // ---------- Filter sidebar (shared between desktop sidebar & mobile sheet) ----------
+function SearchFilterInput() {
+  const { filters, setFilters } = useMarketplace()
+  const [searchDraft, setSearchDraft] = useState(filters.search || '')
+  const inputId = useId()
+
+  useEffect(() => {
+    setSearchDraft(filters.search || '')
+  }, [filters.search])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const search = searchDraft.trim()
+      if (search !== filters.search) setFilters({ search })
+    }, 300)
+
+    return () => window.clearTimeout(timeout)
+  }, [filters.search, searchDraft, setFilters])
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={inputId} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Search vendors
+      </Label>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          id={inputId}
+          type="search"
+          value={searchDraft}
+          onChange={(event) => setSearchDraft(event.target.value)}
+          placeholder="Name, service, or area"
+          className="pl-9 pr-9"
+        />
+        {searchDraft && (
+          <button
+            type="button"
+            onClick={() => setSearchDraft('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-accent"
+            aria-label="Clear vendor search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function FiltersPanelContent() {
   const { filters, setFilters, resetFilters } = useMarketplace()
 
   return (
     <div className="space-y-6">
+      <SearchFilterInput />
+
+      <Separator />
+
       {/* Category */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -186,7 +241,7 @@ function FiltersPanelContent() {
         {(filters.minPrice || filters.maxPrice) && (
           <p className="text-xs text-muted-foreground">
             {filters.minPrice && `From ${formatPKRShort(Number(filters.minPrice))}`}
-            {filters.minPrice && filters.maxPrice && ' — '}
+            {filters.minPrice && filters.maxPrice && ' â€” '}
             {filters.maxPrice && `up to ${formatPKRShort(Number(filters.maxPrice))}`}
           </p>
         )}
@@ -334,7 +389,7 @@ function ActiveFilterChips() {
   }
   if (filters.minRating) {
     chips.push({
-      label: `${filters.minRating}★ & up`,
+      label: `${filters.minRating}â˜… & up`,
       onClear: () => setFilters({ minRating: '' }),
     })
   }
@@ -384,32 +439,26 @@ function ActiveFilterChips() {
 export function BrowseView() {
   const {
     filters,
-    setFilters,
     resetFilters,
     filtersOpen,
     setFiltersOpen,
   } = useMarketplace()
   const { vendors, loading } = useVendors(filters)
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // local search input (synced with filters.search)
-  const [searchInput, setSearchInput] = useState(filters.search || '')
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setFilters({ search: searchInput.trim() })
-  }
-
-  const handleClearSearch = () => {
-    setSearchInput('')
-    setFilters({ search: '' })
-  }
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
 
   const resultCount = vendors.length
+  const pageCount = Math.ceil(resultCount / VENDORS_PER_PAGE)
+  const firstVisibleResult = (currentPage - 1) * VENDORS_PER_PAGE
+  const visibleVendors = vendors.slice(firstVisibleResult, firstVisibleResult + VENDORS_PER_PAGE)
   const activeCat =
     filters.category !== 'all' ? getCategoryConfig(filters.category) : null
 
   const headerSubtitle = useMemo(() => {
-    if (loading) return 'Finding the perfect vendors for your shaadi…'
+    if (loading) return 'Finding the perfect vendors for your shaadiâ€¦'
     if (resultCount === 0) return 'No vendors match your filters yet.'
     return `${resultCount} vendor${resultCount === 1 ? '' : 's'} ready to make your day special.`
   }, [loading, resultCount])
@@ -436,47 +485,6 @@ export function BrowseView() {
                 {headerSubtitle}
               </p>
             </div>
-
-            {/* Search + mobile filter trigger */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className="flex flex-col gap-3 sm:flex-row sm:items-center"
-            >
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Search vendors, services, areas… (e.g. 'bridal makeup', 'DHA', 'candid')"
-                  className="pl-10 pr-10"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent"
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-              <Button type="submit" className="sm:w-auto">
-                <Search className="h-4 w-4" />
-                Search
-              </Button>
-              {/* Mobile filter trigger */}
-              <Button
-                type="button"
-                variant="outline"
-                className="lg:hidden"
-                onClick={() => setFiltersOpen(true)}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters
-              </Button>
-            </form>
 
             {/* Active filter chips */}
             <div className="pt-1">
@@ -517,7 +525,7 @@ export function BrowseView() {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      Loading…
+                      Loadingâ€¦
                     </span>
                   ) : (
                     <span>
@@ -530,6 +538,16 @@ export function BrowseView() {
                   )}
                 </p>
               </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="lg:hidden"
+                onClick={() => setFiltersOpen(true)}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filters
+              </Button>
 
               {/* Sort */}
               <div className="flex items-center gap-2">
@@ -567,19 +585,77 @@ export function BrowseView() {
             ) : resultCount === 0 ? (
               <EmptyState onReset={resetFilters} />
             ) : (
-              <div
-                className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
-              >
-                {vendors.map((vendor, i) => (
-                  <div
-                    key={vendor.slug}
-                    className="animate-fade-up"
-                    style={{ animationDelay: `${i * 0.04}s` }}
-                  >
-                    <VendorCard vendor={vendor} className="h-full" />
+              <>
+                <div
+                  id="vendor-results"
+                  className="grid scroll-mt-24 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                >
+                  {visibleVendors.map((vendor, i) => (
+                    <div
+                      key={vendor.slug}
+                      className="animate-fade-up"
+                      style={{ animationDelay: `${i * 0.04}s` }}
+                    >
+                      <VendorCard vendor={vendor} className="h-full" />
+                    </div>
+                  ))}
+                </div>
+
+                {resultCount > VENDORS_PER_PAGE && (
+                  <div className="flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-5 sm:flex-row">
+                    <p className="text-sm text-muted-foreground" aria-live="polite">
+                      Showing {firstVisibleResult + 1}â€“{Math.min(firstVisibleResult + VENDORS_PER_PAGE, resultCount)} of {resultCount} vendors
+                    </p>
+                    <nav aria-label="Vendor results pages" className="flex flex-wrap items-center justify-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => {
+                          setCurrentPage((page) => Math.max(1, page - 1))
+                          document.getElementById('vendor-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }}
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="hidden sm:inline">Previous</span>
+                      </Button>
+                      {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+                        <Button
+                          key={page}
+                          type="button"
+                          variant={page === currentPage ? 'default' : 'outline'}
+                          size="icon"
+                          className="h-9 w-9"
+                          aria-label={`Page ${page}`}
+                          aria-current={page === currentPage ? 'page' : undefined}
+                          onClick={() => {
+                            setCurrentPage(page)
+                            document.getElementById('vendor-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === pageCount}
+                        onClick={() => {
+                          setCurrentPage((page) => Math.min(pageCount, page + 1))
+                          document.getElementById('vendor-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }}
+                        aria-label="Next page"
+                      >
+                        <span className="hidden sm:inline">Next</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </nav>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -637,7 +713,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
       </h3>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         Apne filters thore adjust karein ya reset kar ke phir se try karein.
-        ShaadiSet pe 100+ verified vendors mojood hain — aapko perfect match
+        ShaadiSet pe 100+ verified vendors mojood hain â€” aapko perfect match
         milega!
       </p>
       <div className="mt-6 flex flex-col items-center justify-center gap-2 sm:flex-row">

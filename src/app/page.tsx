@@ -7,6 +7,12 @@ import { Header } from '@/components/marketplace/header'
 import { Footer } from '@/components/marketplace/footer'
 import { HomeView } from '@/components/marketplace/views/home-view'
 import { useMarketplace } from '@/lib/store'
+import type { View } from '@/lib/types'
+
+const ROUTABLE_VIEWS: View[] = [
+  'home', 'browse', 'vendor', 'compare', 'dashboard', 'blog', 'about',
+  'contact', 'vip', 'vendor-signup', 'plan', 'recommend', 'bundles', 'city',
+]
 
 // Lazy-load all views except Home — only compiles the active view on demand
 // Lazy-load views to reduce initial bundle
@@ -34,6 +40,25 @@ function ViewLoader() {
 export default function Home() {
   const { view, isAuthenticated, setView } = useMarketplace()
   const router = useRouter()
+
+  useEffect(() => {
+    const restoreViewFromUrl = () => {
+      const params = new URLSearchParams(window.location.search)
+      const page = params.get('page')
+      const nextView = ROUTABLE_VIEWS.includes(page as View) ? page as View : 'home'
+      const selectedVendorSlug = nextView === 'vendor' ? params.get('vendor') : null
+
+      useMarketplace.setState({
+        view: nextView,
+        selectedVendorSlug,
+        mobileNavOpen: false,
+      })
+    }
+
+    restoreViewFromUrl()
+    window.addEventListener('popstate', restoreViewFromUrl)
+    return () => window.removeEventListener('popstate', restoreViewFromUrl)
+  }, [])
 
   useEffect(() => {
     if (view === 'dashboard' && !isAuthenticated) {

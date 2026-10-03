@@ -91,15 +91,38 @@ const DEFAULT_FILTERS: Filters = {
   verifiedOnly: false,
 }
 
+function updateViewUrl(view: View, vendorSlug?: string) {
+  if (typeof window === 'undefined') return
+
+  const url = new URL(window.location.href)
+  if (view === 'home') url.searchParams.delete('page')
+  else url.searchParams.set('page', view)
+
+  if (view === 'vendor' && vendorSlug) url.searchParams.set('vendor', vendorSlug)
+  else url.searchParams.delete('vendor')
+
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`
+  const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`
+  if (nextUrl !== currentUrl) window.history.pushState(null, '', nextUrl)
+}
+
 export const useMarketplace = create<MarketplaceState>()(
   persist(
     (set, get) => ({
       view: 'home',
       selectedVendorSlug: null,
-      setView: (view) => set({ view, mobileNavOpen: false }),
-      openVendor: (slug) =>
-        set({ view: 'vendor', selectedVendorSlug: slug, mobileNavOpen: false }),
-      goHome: () => set({ view: 'home', mobileNavOpen: false }),
+      setView: (view) => {
+        updateViewUrl(view)
+        set({ view, selectedVendorSlug: null, mobileNavOpen: false })
+      },
+      openVendor: (slug) => {
+        updateViewUrl('vendor', slug)
+        set({ view: 'vendor', selectedVendorSlug: slug, mobileNavOpen: false })
+      },
+      goHome: () => {
+        updateViewUrl('home')
+        set({ view: 'home', selectedVendorSlug: null, mobileNavOpen: false })
+      },
 
       filters: DEFAULT_FILTERS,
       setFilters: (newFilters) =>
