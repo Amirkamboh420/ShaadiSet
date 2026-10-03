@@ -1,6 +1,7 @@
 'use client'
 
-import { Sparkles, Instagram, Facebook, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import { Instagram, Facebook, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import Image from 'next/image'
 import { useMarketplace } from '@/lib/store'
 import { CATEGORIES, CITIES } from '@/lib/constants'
 
@@ -37,9 +38,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-2">
             <div className="flex items-center gap-2">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-                <Sparkles className="h-5 w-5" />
-              </div>
+              <Image src="/shaadiset-mark.svg" alt="" width={40} height={40} className="h-9 w-9 rounded-lg" />
               <div>
                 <div className="font-serif text-lg font-bold text-foreground">
                   ShaadiSet

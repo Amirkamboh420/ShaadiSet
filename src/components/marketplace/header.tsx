@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Menu,
@@ -59,10 +60,9 @@ export function Header() {
         <button
           onClick={() => setView('home')}
           className="flex shrink-0 items-center gap-2 transition active:scale-95"
+          aria-label="ShaadiSet home"
         >
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Sparkles className="h-5 w-5" />
-          </div>
+          <Image src="/shaadiset-mark.svg" alt="" width={40} height={40} className="h-9 w-9 rounded-lg shadow-sm" />
           <div className="header-brand-copy text-left leading-none">
             <div className="font-serif text-lg font-bold tracking-tight text-foreground">
               ShaadiSet
@@ -169,9 +169,7 @@ export function Header() {
               <SheetHeader>
                 <SheetTitle className="text-left">
                   <div className="flex items-center gap-2">
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-                      <Sparkles className="h-4 w-4" />
-                    </div>
+                    <Image src="/shaadiset-mark.svg" alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
                     <span className="font-serif text-lg">ShaadiSet</span>
                   </div>
                 </SheetTitle>

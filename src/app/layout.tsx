@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "ShaadiSet" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/shaadiset-mark.svg",
   },
   openGraph: {
     title: "ShaadiSet — Pakistan's Wedding Vendor Marketplace",

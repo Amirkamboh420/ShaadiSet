@@ -118,10 +118,45 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scrollbar-color: oklch(0.42 0.15 28 / 0.72) oklch(0.93 0.035 55);
+    scrollbar-width: thin;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv01";
   }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(0.93 0.035 55);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid oklch(0.93 0.035 55);
+  border-radius: 999px;
+  background: linear-gradient(180deg, oklch(0.48 0.16 10), oklch(0.32 0.13 25));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, oklch(0.56 0.17 10), oklch(0.4 0.15 25));
+}
+
+.dark {
+  scrollbar-color: oklch(0.62 0.14 15 / 0.8) oklch(0.21 0.04 25);
+}
+
+.dark::-webkit-scrollbar-track {
+  background: oklch(0.21 0.04 25);
+}
+
+.dark::-webkit-scrollbar-thumb {
+  border-color: oklch(0.21 0.04 25);
 }
 
 /* Wedding-themed utilities */

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
@@ -13,7 +14,6 @@ import {
   LockKeyhole,
   Mail,
   Phone,
-  Sparkles,
   UserRound,
 } from 'lucide-react'
 import { useMarketplace } from '@/lib/store'
@@ -80,9 +80,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
             <div className="absolute -right-8 -top-4 h-48 w-48 rounded-full border border-white/10" />
             <div className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-[#db7f78]/20 blur-3xl" />
             <Link href="/" className="relative flex w-fit items-center gap-3">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20">
-                <Sparkles className="h-6 w-6" />
-              </span>
+              <Image src="/shaadiset-mark.svg" alt="" width={48} height={48} className="h-12 w-12 rounded-2xl shadow-sm ring-1 ring-white/20" />
               <span>
                 <span className="block font-serif text-2xl font-bold">ShaadiSet</span>
                 <span className="text-[10px] uppercase tracking-[0.24em] text-white/65">Wedding marketplace</span>
@@ -118,9 +116,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
               </Link>
 
               <div className="mb-7 lg:hidden">
-                <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#7d1238] text-white shadow-lg shadow-[#7d1238]/20">
-                  <Sparkles className="h-6 w-6" />
-                </div>
+                <Image src="/shaadiset-mark.svg" alt="" width={48} height={48} className="mb-5 h-12 w-12 rounded-2xl shadow-lg shadow-[#7d1238]/20" />
                 <p className="font-serif text-xl font-bold text-[#391625]">ShaadiSet</p>
                 <p className="mt-1 text-sm text-[#8d7d82]">Pakistan ki wedding planning, ek jagah.</p>
               </div>
